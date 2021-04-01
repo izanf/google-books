@@ -28,7 +28,8 @@ const defaultColors = {
   white: '#F1F0F2',
   silver: '#D9D5D2',
   gray: '#3F3F40',
-  green: '#408C2B'
+  green: '#408C2B',
+  fireEngine: '#E31B23'
 }
 
 export const Colors = {

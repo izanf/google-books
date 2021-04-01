@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { useHistory } from 'react-router-dom'
 
-import { IMG_NOT_FOUND_BOOK } from '../../constants'
+import loadingImg from '../../assets/images/loading.gif'
+import { IMG_NOT_FOUND_BOOK, ITEMS_PER_PAGE } from '../../constants'
 import Paths from '../../routes/routes.json'
 
 import { fetchBooks } from '../../store/reducers/books'
 
-import { Input } from '../../components'
+import { Input, Button } from '../../components'
 import Card from './Card'
 
 const Container = styled.div`
@@ -29,22 +29,55 @@ const Header = styled.div`
 `
 
 const NoItems = styled.p`
-font-family: 'Rubik', sans-serif;
-text-align: center;
+	font-family: 'Rubik', sans-serif;
+	text-align: center;
 	padding: ${({ theme }) => theme.Spacing.xxxlarge};
 	color: ${({ theme }) => theme.Colors.white};
 `
 
+const LoadingWrapper = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: ${({ theme }) => theme.Spacing.large};
+`
+const Image = styled.img`
+`
+
+const BooksWrapper = styled.div``
+const LoadMoreWrapper = styled.div`
+	display: flex;
+	justify-content: center;
+	padding: ${({ theme }) => theme.Spacing.large};
+`
+
 const Home = ({ loading, booksList, fetchBooks, history }) => {
 	const [search, setSearch] = useState('')
+	const [page, setPage] = useState(0)
 
-	useEffect(() => {
+	const _fetchBooks = (page, loadMore) => {
+		console.log('SCR', page, loadMore)
+
 		const params = {
-			q: search
+			qs: {
+				q: search,
+				startIndex: page * ITEMS_PER_PAGE
+			},
+			loadMore
 		}
 
-		fetchBooks(params)
+		if (search.length > 3) fetchBooks(params)
+	}
+
+	useEffect(() => {
+		setPage(0)
+		_fetchBooks(0)
 	}, [search])
+
+	const _loadMore = () => {
+		setPage(page + 1)
+		_fetchBooks(page + 1, true)
+	}
 
 	const _goDetails = (data) => {
 		history.push(Paths.DETAILS, { data })
@@ -67,10 +100,19 @@ const Home = ({ loading, booksList, fetchBooks, history }) => {
 			<Header>
 				<Input id="search-input" value={search} onChange={e => setSearch(e.target.value)}/>
 			</Header>
-			{loading ? <p>Carregando...</p> : booksList.length ? (
-				<BooksList>
-					{booksList.map(_renderCard)}
-				</BooksList>
+			{loading ? (
+				<LoadingWrapper>
+					<Image src={loadingImg} />
+				</LoadingWrapper>
+			) : booksList.length ? (
+				<BooksWrapper>
+					<BooksList>
+						{booksList.map(_renderCard)}
+					</BooksList>
+					<LoadMoreWrapper>
+						<Button onClick={_loadMore}>Carregar mais</Button>
+					</LoadMoreWrapper>
+				</BooksWrapper>
 			) : (
 				<NoItems>
 					Não há nenhum resultado encontrado na sua busca.
